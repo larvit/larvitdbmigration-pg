@@ -33,14 +33,15 @@
   },
   "homepage": "https://github.com/larvit/larvitdbmigration-pg#readme",
   "dependencies": {
-    "larvitdb-pg": "0.2.0",
     "larvitutils": "3.1.1"
   },
   "devDependencies": {
     "@types/dotenv": "6.1.1",
     "@types/node": "12.7.2",
+    "@types/pg": "7.4.14",
     "@types/tape": "4.2.33",
     "dotenv": "8.0.0",
+    "larvitdb-pg": "0.2.1",
     "tape": "4.11.0",
     "ts-node": "8.3.0",
     "tslint": "5.18.0",

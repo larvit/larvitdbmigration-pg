@@ -131,7 +131,7 @@ class DbMigration {
 
 				await db.query('UPDATE "' + tableName + '" SET version = ' + Number(startVersion) + ';');
 
-				dbCon.end();
+				dbCon.release();
 
 				await this.runScripts(Number(startVersion) + 1);
 			}
