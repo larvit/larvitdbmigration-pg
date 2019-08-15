@@ -1,0 +1,85 @@
+= Database migration tool
+
+This is used to keep track of database structure, content etc, and update it when need be via deploys.
+
+A table by default called db_versions will be created, containing a single integer.
+
+Scripts will be placed by default in process.cwd()/dbmigration/<version>.js
+
+Each migration script will be ran, and the db_version increased, until no more migration scripts exists.
+
+== Installation
+
+`npm i larvitdbmigration-pg`
+
+== Usage
+
+=== Application startup script
+
+In your application startup script, do something like this:
+
+[source,javascript]
+----
+const DbMigration = require('larvitdbmigration-pg');
+const Db = require('larvitdb-pg');
+const dbDriver = new Db({
+	user: 'foo',
+	password: 'bar',
+});
+const dbMigration = new DbMigration({
+	dbDriver,
+	tableName: 'db_version', // Optional - defaults to 'db_version'
+	migrationScriptPath: './dbmigration', // Optional, defaults to './dbmigration'
+	log // Optional, will use log.silly(), log.debug(), log.verbose(), log.info(), log.warn() and log.error() if given.
+});
+
+dbMigration.run().then(() => {
+	console.log('Database migrated to latest version');
+}).catch(err => {
+	throw err;
+});
+----
+
+=== Example migration scripts
+
+Lets say the current database have a table like this:
+
+[source,SQL]
+----
+CREATE TABLE bloj (nisse serial);
+----
+
+And in the next deploy we'd like to change the column name "nisse" to "hasse". For this you can do one of two methods:
+
+==== Javascript
+
+Create the file process.cwd()/migrationScriptPath/1.js with this content:
+
+.migrationScriptPath/1.js
+[source,javascript]
+----
+'use strict';
+
+// Always make the function async (or return a promise, they are equal)
+exports = module.exports = async function (options) {
+	const { db } = options;
+
+	await db.query('ALTER TABLE bloj RENAME COLUMN nisse TO hasse;');
+};
+----
+
+==== SQL
+
+*IMPORTANT!* SQL files will be ignored if a .js file exists.
+
+Create the file process.cwd()/migrationScriptPath/1.sql with this content:
+
+.migrationScriptPath/1.sql
+[source,SQL]
+----
+ALTER TABLE bloj RENAME COLUMN nisse TO hasse;
+----
+
+==== Summary
+
+Tadaaa! Now this gets done once and the version will be bumped to 1. If you then create a script named "2.js" or "2.sql" you might guess what happends. :)

@@ -1,0 +1,49 @@
+{
+  "name": "larvitdbmigration-pg",
+  "version": "0.1.0",
+  "description": "Database migration tool",
+  "main": "build/index.js",
+  "files": [
+    "/build"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "lint": "tslint ./src/* ./test/*",
+    "test": "npm run lint && ts-node node_modules/.bin/tape test/*.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/larvit/larvitdbmigration-pg.git"
+  },
+  "keywords": [
+    "db",
+    "database",
+    "database-migration",
+    "migration",
+    "postgres",
+    "postgresql"
+  ],
+  "author": {
+    "name": "Mikael 'Lilleman' Göransson",
+    "email": "lilleman@zmartbag.com"
+  },
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/larvit/larvitdbmigration-pg/issues"
+  },
+  "homepage": "https://github.com/larvit/larvitdbmigration-pg#readme",
+  "dependencies": {
+    "larvitdb-pg": "0.2.0",
+    "larvitutils": "3.1.1"
+  },
+  "devDependencies": {
+    "@types/dotenv": "6.1.1",
+    "@types/node": "12.7.2",
+    "@types/tape": "4.2.33",
+    "dotenv": "8.0.0",
+    "tape": "4.11.0",
+    "ts-node": "8.3.0",
+    "tslint": "5.18.0",
+    "typescript": "3.5.3"
+  }
+}
