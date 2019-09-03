@@ -1,12 +1,13 @@
 import test from 'tape';
 import dotenv from 'dotenv';
 import { DbMigration } from '../src/index';
-import { Log } from 'larvitutils';
+import { Log, Utils } from 'larvitutils';
 import { Db } from 'larvitdb-pg';
 import path from 'path';
 
 dotenv.config();
 const log = new Log();
+const lUtils = new Utils({ log });
 let db: Db;
 
 test('Setup database connection', async t => {
@@ -21,6 +22,10 @@ test('Setup database connection', async t => {
 	};
 
 	db = new Db(dbConf);
+
+	if (process.env.CLEAR_DB === 'true') {
+		await db.resetSchema('public');
+	}
 
 	const res = await db.query('SELECT * FROM pg_catalog.pg_tables WHERE schemaname = \'public\';');
 
@@ -83,16 +88,14 @@ test('Check db_version', async t => {
 });
 
 
-/* Do me!
-test('Should fail when migration returns error', async () => {
-	await db.removeAllTables();
+test('Should fail when migration returns error', async t => {
+	await db.resetSchema('public');
 
 	// Run failing migrations
 	const dbMigrations = new DbMigration({
-		migrationScriptPath: path.join(__dirname, '../testmigrations_mariadb_failing'),
-		dbType: 'mariadb',
+		migrationScriptPath: path.join(__dirname, '../testmigrations_failing'),
 		dbDriver: db,
-		log
+		log,
 	});
 
 	let thrownErr;
@@ -103,18 +106,59 @@ test('Should fail when migration returns error', async () => {
 		thrownErr = err;
 	}
 
-	assert(thrownErr instanceof Error, 'err should be an instance of Error');
-	assert.strictEqual(thrownErr.message, 'some error');
+	t.equal(thrownErr instanceof Error, true, 'err should be an instance of Error');
+	t.equal(thrownErr.message, 'some error');
+	t.end();
 });
-*/
+
+test('Run multiple migrations at the same time', async t => {
+	let migration1IsDone = false;
+	let migration2IsDone = false;
+
+	await db.resetSchema('public');
+
+	const dbMigration1 = new DbMigration({
+		migrationScriptPath: path.join(__dirname, '../testmigrations'),
+		dbDriver: db,
+		log,
+	});
+
+	const dbMigration2 = new DbMigration({
+		migrationScriptPath: path.join(__dirname, '../testmigrations'),
+		dbDriver: db,
+		log,
+	});
+
+	const dbMigration3 = new DbMigration({
+		migrationScriptPath: path.join(__dirname, '../testmigrations'),
+		dbDriver: db,
+		log,
+	});
+
+	// Run two of the migrations without awaiting
+	dbMigration1.run().then(() => { migration1IsDone = true; });
+	dbMigration2.run().then(() => { migration2IsDone = true; });
+
+	// await the third migration that should finnish at some point
+	await dbMigration3.run();
+
+	// Make sure all migrations is done before proceeding, because
+	// otherwise future SQL queries might be problematic
+	while (migration1IsDone === false || migration2IsDone === false) {
+		await lUtils.setTimeout(10);
+	}
+
+	// Check data
+	const { rows } = await db.query('SELECT * FROM bloj');
+
+	t.equal(rows.length, 1);
+	t.equal(rows[0].hasse, 42);
+
+	t.end();
+});
 
 test('Cleanup', async t => {
-	let sql = '';
-	sql += 'DROP SCHEMA public CASCADE;';
-	sql += 'CREATE SCHEMA public;';
-	sql += 'GRANT ALL ON SCHEMA public TO public;';
-	sql += 'COMMENT ON SCHEMA public IS \'standard public schema\';';
-	await db.query(sql);
+	await db.resetSchema('public');
 	db.end();
 	t.end();
 });

@@ -1,6 +1,6 @@
 {
   "name": "larvitdbmigration-pg",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Database migration tool",
   "main": "build/index.js",
   "files": [
@@ -33,15 +33,17 @@
   },
   "homepage": "https://github.com/larvit/larvitdbmigration-pg#readme",
   "dependencies": {
-    "larvitutils": "3.2.0"
+    "larvitutils": "3.2.0",
+    "uuid": "3.3.3"
   },
   "devDependencies": {
     "@types/dotenv": "6.1.1",
     "@types/node": "12.7.2",
     "@types/pg": "7.11.0",
     "@types/tape": "4.2.33",
+    "@types/uuid": "3.4.5",
     "dotenv": "8.1.0",
-    "larvitdb-pg": "0.4.0",
+    "larvitdb-pg": "0.5.2",
     "tape": "4.11.0",
     "ts-node": "8.3.0",
     "tslint": "5.19.0",

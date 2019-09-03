@@ -1,6 +1,7 @@
 import { Log, LogInstance, Utils } from 'larvitutils';
 import { Db } from 'larvitdb-pg';
 import fs from 'fs';
+import uuid from 'uuid/v4';
 
 const topLogPrefix = 'larvitdbmigration-pg: src/index.ts: ';
 
@@ -14,9 +15,11 @@ type DbMigrationOptions = {
 class DbMigration {
 	public readonly tableName: string;
 	public readonly migrationScriptPath: string;
+	public readonly instanceUuid: string = uuid();
 	private lUtils: Utils;
 	private log: LogInstance;
 	private dbDriver: Db;
+	private instanceLogPrefix: string;
 
 	constructor(options: DbMigrationOptions) {
 		this.dbDriver = options.dbDriver;
@@ -44,21 +47,33 @@ class DbMigration {
 			this.migrationScriptPath = process.cwd() + '/' + this.migrationScriptPath.substring(2);
 		}
 
+		this.instanceLogPrefix = topLogPrefix + 'uuid: "' + this.instanceUuid + '" - ';
+
 		this.lUtils = new Utils({ log: this.log });
 	}
 
 	public async run() {
-		const { tableName, log } = this;
-		const logPrefix = topLogPrefix + 'run() - ';
+		const { tableName, log, instanceLogPrefix } = this;
+		const logPrefix = instanceLogPrefix + 'run() - ';
 		const db = this.dbDriver;
 
 		// Create table if it does not exist
-		await db.query('CREATE TABLE IF NOT EXISTS "' + tableName + '" ('
-			+ 'id integer NOT NULL DEFAULT 1,'
-			+ 'version integer NOT NULL DEFAULT 0,'
-			+ 'running integer NOT NULL DEFAULT 0,'
-			+ 'CONSTRAINT db_version_pkey PRIMARY KEY (id)'
-		+ ');');
+		try {
+			await db.query('CREATE TABLE "' + tableName + '" ('
+				+ 'id integer NOT NULL DEFAULT 1,'
+				+ 'version integer NOT NULL DEFAULT 0,'
+				+ 'running integer NOT NULL DEFAULT 0,'
+				+ 'CONSTRAINT db_version_pkey PRIMARY KEY (id)'
+			+ ');', undefined, { doNotLogErrors: true });
+		} catch (err) {
+			if (err.code === '42P07') {
+				// This happens when a table already exists, and we're ok with that
+				log.verbose(logPrefix + 'Table "' + tableName + '" already exists');
+			} else {
+				log.error(logPrefix + 'Error creating table, err: "' + err.message + '", code: "' + err.code + '"');
+				throw err;
+			}
+		}
 
 		// Insert first record if it does not exist
 		await db.query('INSERT INTO "' + tableName + '" VALUES(1, 0, 0) ON CONFLICT DO NOTHING;');
@@ -80,9 +95,10 @@ class DbMigration {
 	}
 
 	public async runScripts(startVersion: number = 0): Promise<void> {
-		const { tableName, log, migrationScriptPath } = this;
-		const logPrefix = topLogPrefix + 'runScripts() - tableName: "' + tableName + '" - ';
+		const { tableName, log, migrationScriptPath, instanceLogPrefix } = this;
+		const logPrefix = instanceLogPrefix + 'runScripts() - tableName: "' + tableName + '" - ';
 		const db = this.dbDriver;
+		const that = this;
 
 		log.verbose(logPrefix + 'Started with startVersion: "' + startVersion + '" in path: "' + migrationScriptPath + '"');
 
@@ -98,6 +114,15 @@ class DbMigration {
 			});
 		}) as string[];
 
+		async function finalize() {
+			log.debug(logPrefix + 'Finalizing script running with setting db version and running next script');
+
+			await db.query('UPDATE "' + tableName + '" SET version = ' + Number(startVersion) + ';');
+			log.debug(logPrefix + 'Database updated to version: "' + Number(startVersion) + '"');
+
+			await that.runScripts(Number(startVersion) + 1);
+		}
+
 		// Loop through the items and see what kind of migration scripts it is
 		for (let i = 0; items.length !== i; i++) {
 			const item = items[i];
@@ -109,8 +134,7 @@ class DbMigration {
 
 				await migrationScript({ db, log });
 				log.debug(logPrefix + 'Js migration script #' + startVersion + ' ran. Updating database version and moving on.');
-				await db.query('UPDATE "' + tableName + '" SET version = ' + Number(startVersion) + ';');
-				await this.runScripts(Number(startVersion) + 1);
+				await finalize();
 			} else if (item === startVersion + '.sql') {
 				log.info(logPrefix + 'Found sql migration script #' + startVersion + ', running it now.');
 
@@ -129,19 +153,15 @@ class DbMigration {
 					});
 				});
 
-				await db.query('UPDATE "' + tableName + '" SET version = ' + Number(startVersion) + ';');
-
 				dbCon.release();
-
-				await this.runScripts(Number(startVersion) + 1);
+				await finalize();
 			}
 		}
 	}
 
 	private async getLock() {
-		const { tableName, log } = this;
-		const lUtils = this.lUtils;
-		const logPrefix = topLogPrefix + 'getLock() - tableName: "' + tableName + '" - ';
+		const { tableName, log, lUtils, instanceLogPrefix } = this;
+		const logPrefix = instanceLogPrefix + 'getLock() - tableName: "' + tableName + '" - ';
 		const db = this.dbDriver;
 		const dbCon = await db.getConnection();
 
@@ -150,18 +170,23 @@ class DbMigration {
 
 		const { rows } = await dbCon.query('SELECT running FROM "' + tableName + '"');
 		if (rows.length === 0) {
+			await dbCon.query('COMMIT');
 			dbCon.release();
 			const err = new Error('No locking records exists, it should be created by now');
 			log.error(logPrefix + err.message);
 			throw err;
 		} else if (rows[0].running !== 0) {
+			await dbCon.query('COMMIT');
 			await dbCon.release();
 			log.info(logPrefix + 'Another process is running the migrations, wait and try again soon.');
 			await lUtils.setTimeout(500);
 			await this.getLock();
 		} else {
+			log.debug(logPrefix + 'Setting running to 1 in database table');
 			await dbCon.query('UPDATE "' + tableName + '" SET running = 1');
+			log.debug(logPrefix + 'Committing transaction');
 			await dbCon.query('COMMIT');
+			log.debug(logPrefix + 'Transaction commited, releaseing database connection');
 			await dbCon.release();
 		}
 	}

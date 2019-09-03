@@ -83,3 +83,9 @@ ALTER TABLE bloj RENAME COLUMN nisse TO hasse;
 ==== Summary
 
 Tadaaa! Now this gets done once and the version will be bumped to 1. If you then create a script named "2.js" or "2.sql" you might guess what happends. :)
+
+== Version history
+
+v0.1.2
+
+* Fixed bug with multiple concurrent migrations hangs
