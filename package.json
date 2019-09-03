@@ -41,7 +41,7 @@
     "@types/pg": "7.11.0",
     "@types/tape": "4.2.33",
     "dotenv": "8.1.0",
-    "larvitdb-pg": "0.4.0",
+    "larvitdb-pg": "0.5.2",
     "tape": "4.11.0",
     "ts-node": "8.3.0",
     "tslint": "5.19.0",
