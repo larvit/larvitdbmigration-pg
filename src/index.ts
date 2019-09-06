@@ -140,20 +140,11 @@ class DbMigration {
 
 				const dbCon = await db.getConnection();
 
-				await new Promise((resolve, reject) => {
-					dbCon.query(fs.readFileSync(migrationScriptPath + '/' + items[i]).toString(), (err: Error): void => {
-						if (err) {
-							log.error(logPrefix + 'Migration file: ' + item + ' SQL error: ' + err.message);
-							reject(err);
-							return;
-						}
+				await dbCon.query(fs.readFileSync(migrationScriptPath + '/' + items[i]).toString());
 
-						log.info(logPrefix + 'Sql migration script #' + startVersion + ' ran. Updating database version and moving on.');
-						resolve();
-					});
-				});
+				log.info(logPrefix + 'Sql migration script #' + startVersion + ' ran. Updating database version and moving on.');
 
-				dbCon.release();
+				dbCon.end();
 				await finalize();
 			}
 		}
@@ -171,13 +162,13 @@ class DbMigration {
 		const { rows } = await dbCon.query('SELECT running FROM "' + tableName + '"');
 		if (rows.length === 0) {
 			await dbCon.query('COMMIT');
-			dbCon.release();
+			dbCon.end();
 			const err = new Error('No locking records exists, it should be created by now');
 			log.error(logPrefix + err.message);
 			throw err;
 		} else if (rows[0].running !== 0) {
 			await dbCon.query('COMMIT');
-			await dbCon.release();
+			await dbCon.end();
 			log.info(logPrefix + 'Another process is running the migrations, wait and try again soon.');
 			await lUtils.setTimeout(500);
 			await this.getLock();
@@ -186,8 +177,8 @@ class DbMigration {
 			await dbCon.query('UPDATE "' + tableName + '" SET running = 1');
 			log.debug(logPrefix + 'Committing transaction');
 			await dbCon.query('COMMIT');
-			log.debug(logPrefix + 'Transaction commited, releaseing database connection');
-			await dbCon.release();
+			log.debug(logPrefix + 'Transaction commited, ending database connection');
+			await dbCon.end();
 		}
 	}
 }

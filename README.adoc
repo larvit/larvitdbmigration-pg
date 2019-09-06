@@ -86,6 +86,10 @@ Tadaaa! Now this gets done once and the version will be bumped to 1. If you then
 
 == Version history
 
-v0.1.3
+=== v0.2.0
+
+* Updated larvitdb-pg and the requirements of the database layer
+
+=== v0.1.3
 
 * Fixed bug with multiple concurrent migrations hangs
