@@ -1,4 +1,4 @@
-image:https://travis-ci.org/larvit/larvitdbmigrate-pg.svg?branch=master[] image:https://coveralls.io/repos/github/larvit/larvitdbmigrate-pg/badge.svg?branch=master[]
+image:https://travis-ci.org/larvit/larvitdbmigration-pg.svg?branch=master[] image:https://coveralls.io/repos/github/larvit/larvitdbmigration-pg/badge.svg?branch=master[]
 
 = Database migration tool
 
