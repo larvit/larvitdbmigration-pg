@@ -33,7 +33,7 @@
   },
   "homepage": "https://github.com/larvit/larvitdbmigration-pg#readme",
   "dependencies": {
-    "larvitutils": "3.2.0",
+    "larvitutils": "3.2.1",
     "uuid": "3.3.3"
   },
   "devDependencies": {
