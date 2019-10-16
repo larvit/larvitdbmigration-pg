@@ -43,7 +43,7 @@
     "@types/tape": "4.2.33",
     "@types/uuid": "3.4.5",
     "coveralls": "3.0.7",
-    "dotenv": "8.1.0",
+    "dotenv": "8.2.0",
     "larvitdb-pg": "1.0.1",
     "nyc": "14.1.1",
     "tap-spec": "5.0.0",
