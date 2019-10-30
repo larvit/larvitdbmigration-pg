@@ -41,7 +41,7 @@
     "@types/node": "12.12.0",
     "@types/pg": "7.11.2",
     "@types/tape": "4.2.33",
-    "@types/uuid": "3.4.5",
+    "@types/uuid": "3.4.6",
     "coveralls": "3.0.7",
     "dotenv": "8.2.0",
     "larvitdb-pg": "1.0.1",
