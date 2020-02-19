@@ -38,7 +38,7 @@
   },
   "devDependencies": {
     "@types/dotenv": "6.1.1",
-    "@types/node": "12.12.26",
+    "@types/node": "12.12.28",
     "@types/pg": "7.14.1",
     "@types/tape": "4.2.33",
     "@types/uuid": "3.4.7",
