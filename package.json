@@ -34,22 +34,21 @@
   "homepage": "https://github.com/larvit/larvitdbmigration-pg#readme",
   "dependencies": {
     "larvitutils": "3.2.1",
-    "uuid": "3.4.0"
+    "uuid": "7.0.1"
   },
   "devDependencies": {
-    "@types/dotenv": "6.1.1",
-    "@types/node": "12.12.28",
+    "@types/node": "13.7.6",
     "@types/pg": "7.14.1",
     "@types/tape": "4.2.34",
-    "@types/uuid": "3.4.8",
+    "@types/uuid": "7.0.0",
     "coveralls": "3.0.9",
     "dotenv": "8.2.0",
     "larvitdb-pg": "1.0.4",
-    "nyc": "14.1.1",
+    "nyc": "15.0.0",
     "tap-spec": "5.0.0",
     "tape": "4.13.0",
     "ts-node": "8.6.2",
-    "tslint": "5.20.1",
+    "tslint": "6.0.0",
     "typescript": "3.8.2"
   },
   "nyc": {

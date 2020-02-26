@@ -1,7 +1,7 @@
 import { Log, LogInstance, Utils } from 'larvitutils';
 import { Db } from 'larvitdb-pg';
 import fs from 'fs';
-import uuid from 'uuid/v4';
+import { v4 as uuid } from 'uuid';
 
 const topLogPrefix = 'larvitdbmigration-pg: src/index.ts: ';
 
