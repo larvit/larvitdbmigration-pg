@@ -41,7 +41,7 @@
     "@types/pg": "7.14.3",
     "@types/tape": "4.2.34",
     "@types/uuid": "7.0.2",
-    "coveralls": "3.0.11",
+    "coveralls": "3.0.13",
     "dotenv": "8.2.0",
     "larvitdb-pg": "1.0.4",
     "nyc": "15.0.0",
