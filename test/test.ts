@@ -50,7 +50,7 @@ test('Run working migrations', async t => {
 	t.end();
 });
 
-test('Should fetch some data form a migrated table', async t => {
+test('Should fetch some data from a migrated table', async t => {
 	const { rows } = await db.query('SELECT * FROM bloj');
 
 	t.equal(rows.length, 1);
@@ -158,7 +158,10 @@ test('Run multiple migrations at the same time', async t => {
 });
 
 test('Cleanup', async t => {
+	t.comment('Resetting schema public');
 	await db.resetSchema('public');
-	db.end();
+	t.comment('db.end()');
+	await db.end();
+	t.comment('t.end()');
 	t.end();
 });
