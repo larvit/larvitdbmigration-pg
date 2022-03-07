@@ -34,13 +34,13 @@
   "homepage": "https://github.com/larvit/larvitdbmigration-pg#readme",
   "dependencies": {
     "larvitutils": "3.2.1",
-    "uuid": "8.3.1"
+    "uuid": "8.3.2"
   },
   "devDependencies": {
     "@types/node": "14.14.7",
     "@types/pg": "7.14.6",
     "@types/tape": "4.13.0",
-    "@types/uuid": "8.3.0",
+    "@types/uuid": "8.3.4",
     "coveralls": "3.1.0",
     "dotenv": "8.2.0",
     "larvitdb-pg": "1.0.6",
